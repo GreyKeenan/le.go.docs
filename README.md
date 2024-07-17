@@ -18,6 +18,22 @@ info overview:
 - module: collection of package(s)
 	- generally, you have one module per repository
 
+[helpful stackoverflow response](https://stackoverflow.com/a/57314494)
+
 ---
 
-[helpful stackoverflow response](https://stackoverflow.com/a/57314494)
+Testing
+
+	Go has built-in support for testing
+	implemented through "testing" package, naming conventions, and cli command
+
+	naming conventions
+		filenames ending with "_test.go" tells cli tool that there are test funcs inside
+		testing functions are prefixed by "Test"
+			[doesnt say if this is purely convention or necessary]
+
+	testing functions' first parameter must be: (*testing.T) type
+
+	shows testing functions as implemented within the same package they are testing
+
+	run tests in module dir using "go test" command

@@ -22,7 +22,7 @@ func main() {
 		panic(err)
 	}
 
-	fmt.Printf("\nString: %s\n\n", message)
+	fmt.Printf("\nString: %s\n", message)
 
 
 	messages, err := myLibMod.Call_multiple(WORDS[:])
@@ -31,4 +31,5 @@ func main() {
 	}
 
 	fmt.Println(messages)
+	fmt.Println("")
 }
