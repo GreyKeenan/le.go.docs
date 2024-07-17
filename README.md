@@ -37,3 +37,12 @@ Testing
 	shows testing functions as implemented within the same package they are testing
 
 	run tests in module dir using "go test" command
+
+---
+
+build/install
+
+"go build" in module directory builds binary there.
+"go install" in dir builds binary in go installations directory
+	find the directory w/: go list -f '{{.Target}}'
+	may need to add it to PATH
