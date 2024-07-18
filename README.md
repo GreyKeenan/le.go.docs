@@ -473,6 +473,8 @@ if multiple are ready, it "chooses one at random"
 > can use a select w/ just one channel & a default to try to use the channel but do other things if its not available yet. To check it
 
 
-
-
-[pickup from here](https://go.dev/tour/concurrency/7)
+### Exercise: Equivalent Binary Trees
+	
+> using goroutines & channels in an example.
+>
+> I tried my hand at it (see in this repo), but I'm not sure if I did something wrong or ... I used time.Now to measure, and the multithreaded version is consistently slower. That may just be because of the overhead and such for this small-scale example, but maybe I'm meant to implement it in a different way than I did.
