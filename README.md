@@ -9,6 +9,48 @@ Only loosely following & noting. Skimming sections and stuff since im not starti
 
 ---
 
+1. [Basics](#basics)
+1. Misc
+	1. [For loop](#for-loop)
+	1. [Ifs](#ifs)
+	1. [Switches](#switches)
+	1. [Defer](#defer)
+	1. [Pointers](#pointers)
+	1. [Structs](#structs)
+	1. [Arrays](#arrays)
+	1. [Slices](#slices)
+	1. [Range Keyword](#range-keyword)
+	1. [Maps](#maps)
+	1. [Function Stuffs](#function-stuffs)
+		1. [Functions as Values](#functions-as-values)
+		1. [Function Closures](#function-closures)
+1. [Methods and Interfaces](#methods-and-interfaces)
+	1. [Methods](#methods)
+		1. [Pointer Recievers](#pointer-recievers)
+	1. [Interfaces](#interfaces)
+		1. [Nil In Interfaces](#nil-in-interfaces)
+		1. [The Empty Interface](#the-empty-interface)
+		1. [Type Assertions](#type-assertions)
+		1. [Type Switches](#type-switches)
+		1. [Stringer interface](#"Stringer"-interface)
+	1. [Errors](#errors)
+	1. [Readers](#readers)
+	1. [Images](#images)
+1. [Generics](#generics)
+	1. [Type Parameters](#type-parameters)
+	1. [Generic Types](#generic-types)
+1. [Concurrency](#concurrency)
+	1. [Channels](#channels)
+	1. [Buffered Channels](#buffered-channels)
+	1. [Range and Close](#range-and-close)
+		1. [Range](#range)
+	1. [Select](#select)
+
+
+---
+
+## Basics
+
 syntax notes:
 - can name return values at the top of the function in the return-type. Declares the vars as in the arg list, & then when returning can just return\n. Use with caution
 - typecasts: targetType(variable). must be explicit
@@ -331,3 +373,106 @@ type StructName[T constraintName] struct {
 
 
 ## Concurrency
+
+*"goroutine"* - lightweight thread managed by Go runtime
+
+Create a goroutine using the 'go' keyword
+
+` go functionCall() `
+
+gouroutines run in the same address space. Shared memory access must be synchronized
+
+> *sync* can be useful, but isnt necessary
+
+
+### Channels
+
+a "typed conduit" to send/recieve values: [link](https://go.dev/tour/concurrency/2)
+
+> It seems like some sort of functionality surrounding a shared piece of memory. It handles waiting/checking for the memory to be populated properly, identifying locks, etc
+
+> generally, you create a channel, pass that channel to new threads/goroutines you create, send values from those goroutines back through the channel, and handle recieving those values in the original thread
+
+create a channel: ` c := make(chan int) `
+> this creates a channel for sending an int back/forth btwn goroutines
+
+send values through the channels using the "<-" operator
+```
+channel <- value
+	// sends a value to a channel
+
+value := <- channel
+	//recieves a value from the channel
+```
+
+By default, the send/recieve will "block" until the other side is ready. "This allows goroutines to synchronize without explicit locks or condition variables."
+
+> In the example, two separate threads send values through a single channel. ? I think the second send is "blocked" until the first is recieved ?
+
+
+### Buffered Channels
+
+to create a buffered channel, add an arg to make()
+
+` c := make(chan int, bufferLength) `
+
+with a buffered channel:
+- sending is only blocked when the buffer is full
+- recieving is only blocked when the buffer is empty
+
+> So unlike the first example which was only a single channel or single-length channel, can queue up multiple values & let sending threads continue working in some cases
+
+> So, you could also use channels as a cheeky iterating technique, like a yield-return, right?
+
+
+### Range and Close
+
+Channels can be "closed" by a sender.
+
+Reciever can check if a channel is closed: 
+
+` value, isOpen := <-channel `
+- isOpen will be false when the channel is closed
+
+If the reciever closes a channel and the sender tries to send something, the sender will panic
+
+**closing isnt something you always need to do.** Its not like closing a file. Its optional, just to indicate to the reciever in some cases
+
+close a channel: ` close(channel) `
+
+
+#### Range:
+
+` for i := range c ` recieves values from channel until it is closed
+
+> NOT until it reaches the end of the channel. Just until the channel is closed.
+
+
+### Select
+
+"select" keyword is a way for a thread to wait on multiple other goroutines at once, and continue with whichever finished first. It can be used by either the sender or the reciever, ofc
+
+```
+for {
+	select {
+		case sendingChannel <- value:
+			//code to execute after it sends the value
+		case <- recievingChannel:
+			//code to execute after it recieves the value
+		...
+	}
+}
+```
+
+if multiple are ready, it "chooses one at random"
+> is it actually random or just undefined order? Why would it be truly/pseudo random
+
+
+` default ` of the select statement will execute if no other case is ready
+
+> can use a select w/ just one channel & a default to try to use the channel but do other things if its not available yet. To check it
+
+
+
+
+[pickup from here](https://go.dev/tour/concurrency/7)
