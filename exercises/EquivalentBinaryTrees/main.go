@@ -6,12 +6,13 @@ import (
 	"fmt"
 	"sort"
 	"time"
+	"sync"
 )
 
 const TREESIZE = 10
-// Walk walks the tree t sending all values
+// walk walks the tree t sending all values
 // from the tree to the channel ch.
-func Walk(t *tree.Tree) []int {
+func walk(t *tree.Tree) []int {
 	var slc []int = make([]int, 0, TREESIZE)
 	
 	walk_recursive(t, &slc)
@@ -29,7 +30,7 @@ func walk_recursive(t *tree.Tree, slc *[]int) {
 }
 
 func walkTreeSorted(t *tree.Tree, ch chan int) {
-	var slc []int = Walk(t)
+	var slc []int = walk(t)
 	sort.Sort(sort.IntSlice(slc))
 	for _, v := range slc {
 		ch <- v
@@ -70,14 +71,68 @@ func Same_single(t1, t2 *tree.Tree) bool {
 	return true
 }
 
+
+type LockTest struct {
+	m sync.Mutex
+	v [TREESIZE]int
+	pos int
+}
+func walk_mutex_recursive(t *tree.Tree, l *LockTest) {
+	if (t.Left != nil) {
+		walk_mutex_recursive(t.Left, l)
+	}
+	if (t.Right != nil) {
+		walk_mutex_recursive(t.Right, l)
+	}
+	l.v[l.pos] = t.Value
+	l.pos++
+
+}
+func walkTreeSort_mutex(t *tree.Tree, l *LockTest) {
+	//l.m.Lock()
+	defer l.m.Unlock()
+	walk_mutex_recursive(t, l)
+	
+	sort.Sort(sort.IntSlice(l.v[:]))
+
+}
+func Same_mutex(t1,t2 *tree.Tree) bool {
+
+	var lt1 LockTest
+	var lt2 LockTest
+	lt1.pos = 0
+	lt2.pos = 0
+
+	lt1.m.Lock()
+	go walkTreeSort_mutex(t1, &lt1)
+	lt2.m.Lock()
+	go walkTreeSort_mutex(t2, &lt2)
+
+	lt1.m.Lock()
+	lt2.m.Lock()
+	defer lt1.m.Unlock()
+	defer lt2.m.Unlock()
+
+	for i:= 0; i < TREESIZE; i++ {
+		if (lt1.v[i] != lt2.v[i]) {
+			return false
+		}
+	}
+	return true
+}
+
 func main() {
 	start := time.Now()
+
+	t1 := tree.New(1)
+	t2 := tree.New(1)
+	t3 := tree.New(2)
 	
 	ch1 := make(chan bool)
 	ch2 := make(chan bool)
 	
-	go Same(tree.New(1), tree.New(1), ch1)
-	go Same(tree.New(1), tree.New(2), ch2)
+	go Same(t1, t2, ch1)
+	go Same(t1, t3, ch2)
 	
 	fmt.Println(<-ch1)
 	fmt.Println(<-ch2)
@@ -88,13 +143,26 @@ func main() {
 
 	start = time.Now()
 	
-	fmt.Println(Same_single(tree.New(1), tree.New(1)))
-	fmt.Println(Same_single(tree.New(1), tree.New(2)))
+	fmt.Println(Same_single(t1, t2))
+	fmt.Println(Same_single(t1, t3))
 	
 	t = time.Now()
 	fmt.Printf("singlethreaded: %v.\n", t.Sub(start))
+	
+
+	start = time.Now()
+	
+	fmt.Println(Same_mutex(t1, t2))
+	fmt.Println(Same_mutex(t1, t3))
+	
+	t = time.Now()
+	fmt.Printf("with mutex: %v.\n", t.Sub(start))
 
 	/*
-		the non-multithreaded solution is consistently significantly faster, and its still using channels for the Walk() function. Maybe that's just because of the decreased overhead for this small example, but I wonder if I'm not doing this optimally.
+		the non-multithreaded solution is consistently significantly faster, and its still using channels for the walk() function. Maybe that's just because of the decreased overhead for this small example, but I wonder if I'm not doing this optimally.
+	*/
+	/*
+		doing it with a mutex is less consistent. often faster but sometimes much slower than single
+		I think this is just part of the overhead that comes with multithreading stuff
 	*/
 }

@@ -32,7 +32,7 @@ Only loosely following & noting. Skimming sections and stuff since im not starti
 		1. [The Empty Interface](#the-empty-interface)
 		1. [Type Assertions](#type-assertions)
 		1. [Type Switches](#type-switches)
-		1. [Stringer interface](#"Stringer"-interface)
+		1. [Stringer interface](#stringer-interface)
 	1. [Errors](#errors)
 	1. [Readers](#readers)
 	1. [Images](#images)
@@ -45,6 +45,8 @@ Only loosely following & noting. Skimming sections and stuff since im not starti
 	1. [Range and Close](#range-and-close)
 		1. [Range](#range)
 	1. [Select](#select)
+	1. [Exercise: Equivalent Binary Trees](#exercise-equivalent-binary-trees)
+	1. [sync.Mutex](#syncmutex)
 
 
 ---
@@ -478,3 +480,20 @@ if multiple are ready, it "chooses one at random"
 > using goroutines & channels in an example.
 >
 > I tried my hand at it (see in this repo), but I'm not sure if I did something wrong or ... I used time.Now to measure, and the multithreaded version is consistently slower. That may just be because of the overhead and such for this small-scale example, but maybe I'm meant to implement it in a different way than I did.
+
+
+### sync.Mutex
+
+> to implement locking of variables btwn threads / like locking with databases
+
+mutex = *mutual exclusion*
+
+use "sync" stdlib pkg. Gives you a sync.Mutex type w/ Lock & Unlock methods
+
+> The sync.Mutex only manages the lock. It doesnt store the value itself. You handle pairing the lock with the necessary data, and ensuring you check the lock before accessing the data. In example, they are together in a struct
+
+> when acquiring a lock, if already locked, will freeze until unlocked
+>
+> the mutex doesnt need to be initialized or anything
+
+> I tried testing the Equivalent Tree exercise with a mutex, too. (The file is very messy now) It seems like its just such a small example that the overhead makes multithreading slower ??
